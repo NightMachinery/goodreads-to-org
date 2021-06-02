@@ -35,11 +35,14 @@ type Book struct {
 }
 
 func parseBookLine(record []string) Book {
+	// @startHere use 'json parser generator go' to generate parsers automatically
 	book := Book{}
 	book.Id = record[0]
 	title := record[1]
 	if strings.Contains(title, "#") {
 		// Handle series
+		// e.g., `"Title": "Unsouled (Cradle, #1)"`
+
 		splits := strings.Split(title, "(")
 		book.Title = strings.TrimSpace(splits[0])
 
