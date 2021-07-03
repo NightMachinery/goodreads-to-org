@@ -18,7 +18,7 @@ type Book struct {
 	Title                   string
 	Author                  string
 	AuthorLf                string
-	AdditionalAuthorrs      string
+	AdditionalAuthors       string
 	Isbn                    string
 	Isbn13                  string
 	MyRating                string
@@ -26,16 +26,22 @@ type Book struct {
 	Publisher               string
 	Binding                 string
 	Pages                   string
-	PublishedYear           string
+	PublicationYear         string
 	OriginalPublicationYear string
 	ReadDate                string
 	AddDate                 string
 	Bookshelves             string
 	State                   string
+	ExclusiveShelf          string
+	MyReview                string
+	Spoiler string
+	PrivateNotes string
+	ReadCount string
+	RecommendedFor string
+	RecommendedBy string
 }
 
 func parseBookLine(record []string) Book {
-	// @startHere use 'json parser generator go' to generate parsers automatically
 	book := Book{}
 	book.Id = record[0]
 	title := record[1]
@@ -60,19 +66,34 @@ func parseBookLine(record []string) Book {
 	}
 
 	book.Author = record[2]
+	book.AuthorLf = record[3]
+	book.AdditionalAuthors = record[4]
 	book.Isbn = strings.TrimLeft(strings.ReplaceAll(record[5], "\"", ""), "=")
 	book.Isbn13 = strings.TrimLeft(strings.ReplaceAll(record[6], "\"", ""), "=")
+
 	book.MyRating = record[7]
+	if book.MyRating == "0" {
+		book.MyRating = ""
+	}
+
+	book.AvgRating = record[8]
 	book.Publisher = record[9]
 	book.Binding = record[10]
 	book.Pages = record[11]
-	book.PublishedYear = record[12]
+	book.PublicationYear = record[12]
 	book.OriginalPublicationYear = record[13]
 	book.ReadDate = record[14]
 	book.AddDate = record[15]
-	book.Bookshelves = record[18]
+	book.Bookshelves = record[16]
+	book.ExclusiveShelf = record[18]
+	book.MyReview = record[19]
+	book.Spoiler = record[20]
+	book.PrivateNotes = record[21]
+	book.ReadCount = record[22]
+	book.RecommendedFor = record[23]
+	book.RecommendedBy = record[24]
 
-	switch record[18] {
+	switch book.ExclusiveShelf {
 	case "read":
 		book.State = "DONE"
 	case "currently-reading":
@@ -84,20 +105,21 @@ func parseBookLine(record []string) Book {
 
 	}
 
-	if record[18] == "read" {
-
-	} else if record[18] == "to-read" {
-		book.State = "TODO"
-	}
-
 	return book
 }
 
 func (v Book) String() string {
-	if len(v.Series) > 0 {
-		return fmt.Sprintf("Title: %s (Serie: %s/%s) by %s on shelve: %s\n", v.Title, v.Series, v.SeriesNo, v.Author, v.Bookshelves)
+	var authors string
+	if v.AdditionalAuthors != "" {
+		authors = fmt.Sprintf("%s, %s", v.Author, v.AdditionalAuthors)
 	} else {
-		return fmt.Sprintf("Title: %s by %s on shelve: %s\n", v.Title, v.Author, v.Bookshelves)
+		authors = v.Author
+	}
+
+	if len(v.Series) > 0 {
+		return fmt.Sprintf("Title: %s (Serie: %s/%s) by %s on shelve: %s\n", v.Title, v.Series, v.SeriesNo, authors, v.Bookshelves)
+	} else {
+		return fmt.Sprintf("Title: %s by %s on shelve: %s\n", v.Title, authors, v.Bookshelves)
 	}
 }
 
@@ -112,22 +134,40 @@ func writeString(input string, key string) string {
 
 func (b Book) ToOrgMode() string {
 	var buffer strings.Builder
-	buffer.WriteString(fmt.Sprintf("** %s %s by %s\n", b.State, b.Title, b.Author))
+
+	// buffer.WriteString(fmt.Sprintf("** %s %s by %s\n", b.State, b.Title, b.Author))
+	buffer.WriteString(fmt.Sprintf("** %s by %s\n", b.Title, b.Author))
+
 	buffer.WriteString(":PROPERTIES:\n")
+
 	buffer.WriteString(writeString(b.Title, "Title"))
 	buffer.WriteString(writeString(b.Author, "Author"))
+	buffer.WriteString(writeString(b.AdditionalAuthors, "AdditionalAuthors"))
 	buffer.WriteString(writeString(b.Series, "Series"))
 	buffer.WriteString(writeString(b.SeriesNo, "Series#"))
+	buffer.WriteString(writeString(b.AvgRating, "AverageRating"))
+	buffer.WriteString(writeString(b.MyRating, "MyRating"))
+	buffer.WriteString(writeString(b.MyReview, "MyReview"))
+	buffer.WriteString(writeString(b.PrivateNotes, "PrivateNotes"))
+	buffer.WriteString(writeString(b.Publisher, "Publisher"))
+	buffer.WriteString(writeString(b.OriginalPublicationYear, "FirstPublished"))
+	buffer.WriteString(writeString(b.PublicationYear, "Published"))
+	buffer.WriteString(writeString(b.Pages, "Pages"))
+	buffer.WriteString(writeString(b.Bookshelves, "Bookshelves"))
+	buffer.WriteString(writeString(b.ExclusiveShelf, "ExclusiveShelf"))
+	buffer.WriteString(writeString(b.RecommendedBy, "RecommendedBy"))
+	buffer.WriteString(writeString(b.RecommendedFor, "RecommendedFor"))
+	buffer.WriteString(writeString(b.AddDate, "Added"))
+	buffer.WriteString(writeString(b.ReadDate, "ReadDate"))
+	buffer.WriteString(writeString(b.ReadCount, "ReadCount"))
+	buffer.WriteString(writeString(b.Spoiler, "Spoiler"))
 	buffer.WriteString(writeString(b.Isbn13, "ISBN13"))
 	buffer.WriteString(writeString(b.Isbn, "ISBN"))
-	buffer.WriteString(writeString(b.Publisher, "Publisher"))
-	buffer.WriteString(writeString(b.Pages, "Pages"))
-	buffer.WriteString(writeString(b.OriginalPublicationYear, "FirstPublish"))
-	buffer.WriteString(writeString(b.PublishedYear, "Published"))
-	buffer.WriteString(writeString(b.AddDate, "Added"))
-	buffer.WriteString(writeString(b.ReadDate, "Read"))
+	buffer.WriteString(writeString(b.Id, "ID"))
+	buffer.WriteString(writeString("folded", "visibility"))
 
-	buffer.WriteString(":END:")
+	buffer.WriteString(":END:\n")
+
 	return buffer.String()
 }
 
@@ -162,8 +202,7 @@ func main() {
 
 		// Skip first line
 		if book.Title != "Title" && book.Author != "Author" {
-			bookshelves[book.Bookshelves] = append(bookshelves[book.Bookshelves], book)
-
+			bookshelves[book.ExclusiveShelf] = append(bookshelves[book.ExclusiveShelf], book)
 		}
 
 	}
@@ -182,6 +221,7 @@ func main() {
 		for _, book := range books {
 			fmt.Println(book.ToOrgMode())
 		}
+		fmt.Println("\n")
 	}
 	log.Println("Parsing complete -", noOfBooks, "books on", shelves, "shelves")
 }
