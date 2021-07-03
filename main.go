@@ -136,10 +136,12 @@ func (b Book) ToOrgMode() string {
 	var buffer strings.Builder
 
 	// buffer.WriteString(fmt.Sprintf("** %s %s by %s\n", b.State, b.Title, b.Author))
-	buffer.WriteString(fmt.Sprintf("** %s by %s\n", b.Title, b.Author))
+	buffer.WriteString(fmt.Sprintf("** *%s* by /%s/\n", b.Title, b.Author))
 
 	buffer.WriteString(":PROPERTIES:\n")
 
+
+	buffer.WriteString(writeString(fmt.Sprintf("https://www.goodreads.com/book/show/%s", b.Id), "Url"))
 	buffer.WriteString(writeString(b.Title, "Title"))
 	buffer.WriteString(writeString(b.Author, "Author"))
 	buffer.WriteString(writeString(b.AdditionalAuthors, "AdditionalAuthors"))
@@ -164,7 +166,7 @@ func (b Book) ToOrgMode() string {
 	buffer.WriteString(writeString(b.Isbn13, "ISBN13"))
 	buffer.WriteString(writeString(b.Isbn, "ISBN"))
 	buffer.WriteString(writeString(b.Id, "ID"))
-	buffer.WriteString(writeString("folded", "visibility"))
+	// buffer.WriteString(writeString("folded", "visibility"))
 
 	buffer.WriteString(":END:\n")
 
@@ -215,7 +217,11 @@ func main() {
 	noOfBooks := 0
 
 	for shelf, books := range bookshelves {
-		fmt.Println("* ", strings.ToUpper(shelf))
+		var header string
+		// header = strings.ToUpper(shelf)
+		header = fmt.Sprintf("*%s*", shelf)
+
+		fmt.Println("* ", header)
 		shelves++
 		noOfBooks += len(books)
 		for _, book := range books {
