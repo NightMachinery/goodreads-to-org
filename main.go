@@ -165,7 +165,8 @@ func (b Book) ToOrgMode() string {
 	buffer.WriteString(writeString(b.Spoiler, "Spoiler"))
 	buffer.WriteString(writeString(b.Isbn13, "ISBN13"))
 	buffer.WriteString(writeString(b.Isbn, "ISBN"))
-	buffer.WriteString(writeString(b.Id, "ID"))
+	buffer.WriteString(writeString(b.Id, "GoodreadsID"))
+	buffer.WriteString(writeString("Goodreads_" + b.Id, "ID"))
 	// buffer.WriteString(writeString("folded", "visibility"))
 
 	buffer.WriteString(":END:\n")
